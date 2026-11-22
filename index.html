@@ -1,1 +1,102 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CC Spotify Display - Authorization</title>
+  <style>
+    body {
+      background: #121212;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    main {
+      background: #202020;
+      padding: 28px;
+      border-radius: 16px;
+      width: min(420px, 85%);
+      text-align: center;
+    }
+    h1 { color: #1DB954; }
+    p { color: #bbb; line-height: 1.5; }
+    #result {
+      background: #303030;
+      padding: 14px;
+      border-radius: 8px;
+      overflow-wrap: anywhere;
+      text-align: left;
+      font-size: 13px;
+      margin: 18px 0;
+    }
+    button {
+      background: #1DB954;
+      border: none;
+      border-radius: 24px;
+      padding: 13px 22px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+    }
+    .error { color: #ff7777; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>CC Spotify Display</h1>
+  <h2 id="heading">Authorization received</h2>
+  <p id="message">
+    Return to your ESP32 setup page and submit the callback URL.
+  </p>
+
+  <div id="result"></div>
+
+  <button id="copy" onclick="copyUrl()">Copy callback URL</button>
+</main>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get("code");
+  const state = params.get("state");
+  const error = params.get("error");
+
+  const result = document.getElementById("result");
+  const heading = document.getElementById("heading");
+  const message = document.getElementById("message");
+  const copyButton = document.getElementById("copy");
+
+  if (error) {
+    heading.textContent = "Authorization failed";
+    heading.className = "error";
+    message.textContent = "Spotify returned an error: " + error;
+    result.textContent = "Please return to the ESP32 and try again.";
+    copyButton.style.display = "none";
+  } else if (!code || !state) {
+    heading.textContent = "Waiting for Spotify";
+    message.textContent = "Authorize your Spotify account to continue.";
+    result.textContent = "No authorization code received.";
+    copyButton.style.display = "none";
+  } else {
+    result.textContent =
+      "Authorization code received.\n\n" +
+      "State received.\n\n" +
+      "Return to your ESP32 setup page and paste the callback URL.";
+  }
+
+  async function copyUrl() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      copyButton.textContent = "Copied!";
+    } catch (e) {
+      result.textContent = window.location.href;
+    }
+  }
+</script>
+</body>
+</html>
